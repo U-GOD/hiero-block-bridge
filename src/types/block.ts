@@ -4,13 +4,7 @@ import { z } from 'zod';
 // Block Header (HIP-1056 §4.1 — Block Header)
 // ---------------------------------------------------------------------------
 
-/**
- * Zod schema for BlockHeader — metadata about a single block.
- *
- * Per HIP-1056, each block in the Block Stream begins with a header
- * containing its sequential number, cryptographic hashes linking it to
- * the previous block, a consensus timestamp, and software version info.
- */
+/** Block metadata per HIP-1056 §4.1. */
 export const BlockHeaderSchema = z.object({
   /** Sequential block number (0-indexed from genesis). */
   number: z.number().int().nonnegative(),
@@ -34,13 +28,7 @@ export type BlockHeader = z.infer<typeof BlockHeaderSchema>;
 // Transaction Types
 // ---------------------------------------------------------------------------
 
-/**
- * Supported Hedera transaction body types.
- *
- * This enum covers the most common transaction types developers encounter.
- * It is not exhaustive — Hedera has 50+ transaction types — but covers all
- * types the simulator will generate mock data for.
- */
+/** Supported Hedera transaction body types (non-exhaustive). */
 export const TransactionTypeSchema = z.enum([
   // Crypto
   'CryptoTransfer',
@@ -107,12 +95,7 @@ export const ResponseCodeSchema = z.enum([
 
 export type ResponseCode = z.infer<typeof ResponseCodeSchema>;
 
-/**
- * Zod schema for TransactionReceipt — the outcome of a transaction.
- *
- * After a transaction reaches consensus, the network produces a receipt
- * indicating whether it succeeded and any entities it created.
- */
+/** Transaction receipt with status and created entity IDs. */
 export const TransactionReceiptSchema = z.object({
   /** Result status code. */
   status: ResponseCodeSchema,
@@ -138,12 +121,7 @@ export type TransactionReceipt = z.infer<typeof TransactionReceiptSchema>;
 // Contract Function Result
 // ---------------------------------------------------------------------------
 
-/**
- * Zod schema for ContractFunctionResult — the output of a smart contract call.
- *
- * Present in transaction records for ContractCall and ContractCreate types.
- * Contains the EVM execution result, gas consumed, and any logs emitted.
- */
+/** EVM contract execution result (for ContractCall/ContractCreate). */
 export const ContractFunctionResultSchema = z.object({
   /** Contract that was called or created. */
   contractId: z.string().min(1),
@@ -180,13 +158,7 @@ export type ContractFunctionResult = z.infer<typeof ContractFunctionResultSchema
 // Event Transaction (HIP-1056 §4.2 — Event Transaction)
 // ---------------------------------------------------------------------------
 
-/**
- * Zod schema for EventTransaction — a single transaction within a block.
- *
- * Per HIP-1056, an Event Transaction wraps a complete transaction lifecycle:
- * the original request body, the consensus timestamp assigned by the network,
- * the receipt (success/failure), and any state changes or contract results.
- */
+/** A complete transaction record within a block per HIP-1056 §4.2. */
 export const EventTransactionSchema = z.object({
   /** Unique transaction ID (e.g., "0.0.12345@1709000000.000000000"). */
   transactionId: z.string().min(1),
@@ -259,12 +231,7 @@ export const StateChangeTypeSchema = z.enum([
 
 export type StateChangeType = z.infer<typeof StateChangeTypeSchema>;
 
-/**
- * Zod schema for StateChange — a state mutation caused by a transaction.
- *
- * Block Streams include state changes alongside transactions so that
- * consumers can reconstruct the full state of the ledger at any block.
- */
+/** A state mutation caused by a transaction (HIP-1056 §4.3). */
 export const StateChangeSchema = z.object({
   /** The entity affected (account, token, contract, file, topic, etc.). */
   entityId: z.string().min(1),
@@ -286,13 +253,7 @@ export type StateChange = z.infer<typeof StateChangeSchema>;
 // Block Proof (HIP-1056 §4.4 — Block Proof)
 // ---------------------------------------------------------------------------
 
-/**
- * Zod schema for BlockProof — cryptographic proof of block integrity.
- *
- * Per HIP-1056, each block ends with a proof that links the block to
- * the network's running hash and will eventually include a hinTS
- * threshold signature (HIP-1200) once TSS is fully deployed.
- */
+/** Cryptographic proof of block integrity (HIP-1056 §4.4). */
 export const BlockProofSchema = z.object({
   /** Block number this proof applies to. */
   blockNumber: z.number().int().nonnegative(),
@@ -316,13 +277,7 @@ export type BlockProof = z.infer<typeof BlockProofSchema>;
 // State Proof
 // ---------------------------------------------------------------------------
 
-/**
- * Zod schema for StateProof — proof that a piece of state is authentic.
- *
- * State Proofs allow light clients to verify individual pieces of state
- * (e.g., an account balance) without processing the entire block history.
- * Block Nodes will expose a State Proof API per HIP-1081 §5.
- */
+/** State proof for verifying individual entity state (HIP-1081 §5). */
 export const StateProofSchema = z.object({
   /** Entity this proof is for (e.g., "0.0.100"). */
   entityId: z.string().min(1),
@@ -346,13 +301,7 @@ export type StateProof = z.infer<typeof StateProofSchema>;
 // Block Item (HIP-1056 §4 — Block Items)
 // ---------------------------------------------------------------------------
 
-/**
- * A block item is a single entry within a block.
- *
- * HIP-1056 defines a block as an ordered sequence of items. Each item
- * is one of: a transaction (with its receipt and record), a state change
- * resulting from a transaction, or a system event.
- */
+/** A single entry within a block: transaction, state change, or system event. */
 export const BlockItemSchema = z.discriminatedUnion('kind', [
   z.object({ kind: z.literal('transaction'), data: EventTransactionSchema }),
   z.object({ kind: z.literal('stateChange'), data: StateChangeSchema }),
@@ -381,13 +330,7 @@ export type BlockItem = z.infer<typeof BlockItemSchema>;
 // Block (HIP-1056 — Complete Block)
 // ---------------------------------------------------------------------------
 
-/**
- * A complete block as defined by HIP-1056 Block Streams.
- *
- * Structure: BlockHeader → BlockItem[] → BlockProof
- * The block is the fundamental unit of the Block Stream that flows
- * from Consensus Nodes → Block Nodes → downstream consumers.
- */
+/** A complete block: header → items[] → proof. */
 export const BlockSchema = z.object({
   /** Block header with metadata (number, hash, timestamp, etc.). */
   header: BlockHeaderSchema,
@@ -409,12 +352,7 @@ export type Block = z.infer<typeof BlockSchema>;
 // Block Stream Event (union type for event-driven consumption)
 // ---------------------------------------------------------------------------
 
-/**
- * BlockStreamEvent — a tagged union for all events emitted by a Block Stream.
- *
- * Consumers subscribe to a Block Stream and receive a continuous flow of
- * these events. The `type` field discriminates between event kinds.
- */
+/** Tagged union for all Block Stream events (discriminated by `type`). */
 export const BlockStreamEventSchema = z.discriminatedUnion('type', [
   z.object({
     type: z.literal('BLOCK_START'),
@@ -455,12 +393,7 @@ export type BlockStreamEvent = z.infer<typeof BlockStreamEventSchema>;
 // Account Balance Response (for QuerySimulator)
 // ---------------------------------------------------------------------------
 
-/**
- * Zod schema for AccountBalance — response from a balance query.
- *
- * Used by the QuerySimulator and MirrorNodeFallback to return balance data
- * in a consistent format regardless of the data source.
- */
+/** Account balance response. */
 export const AccountBalanceSchema = z.object({
   /** Account ID queried. */
   accountId: z.string().min(1),
@@ -490,15 +423,7 @@ export type AccountBalance = z.infer<typeof AccountBalanceSchema>;
 // Block Stream Listener Events (TypedEventEmitter interface)
 // ---------------------------------------------------------------------------
 
-/**
- * Events emitted by the MockBlockStream and live Block Stream subscriptions.
- *
- * Used with TypedEventEmitter for compile-time checked event handling:
- * ```typescript
- * stream.on('block', (block) => { ... });
- * stream.on('transaction', (tx) => { ... });
- * ```
- */
+/** Events emitted by block stream subscriptions. */
 export interface BlockStreamEvents {
   /** Emitted when a complete block has been assembled. */
   block: (block: Block) => void;

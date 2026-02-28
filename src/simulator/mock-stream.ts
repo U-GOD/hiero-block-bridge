@@ -21,7 +21,6 @@ import type {
 // Random data helpers
 // ---------------------------------------------------------------------------
 
-/** Generate a random hex string of the given byte length. */
 function randomHex(bytes: number): string {
   const arr = new Uint8Array(bytes);
   crypto.getRandomValues(arr);
@@ -30,33 +29,29 @@ function randomHex(bytes: number): string {
     .join('');
 }
 
-/** Pick a random element from an array. */
 function randomPick<T>(arr: readonly T[]): T {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
-/** Generate a random integer between min (inclusive) and max (inclusive). */
 function randomInt(min: number, max: number): number {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-/** Generate a realistic Hedera account ID. */
 function randomAccountId(): string {
   return `0.0.${randomInt(100, 9_999_999)}`;
 }
 
-/** Generate a Hedera transaction ID. */
 function makeTransactionId(payerAccountId: string, timestamp: Date): string {
   const seconds = Math.floor(timestamp.getTime() / 1000);
   const nanos = (timestamp.getTime() % 1000) * 1_000_000;
   return `${payerAccountId}@${seconds}.${nanos.toString().padStart(9, '0')}`;
 }
 
-// Available transaction types for mock generation (weighted toward common ones)
+/** Weighted toward common types to produce realistic distributions. */
 const COMMON_TX_TYPES: TransactionType[] = [
   'CryptoTransfer',
   'CryptoTransfer',
-  'CryptoTransfer', // weighted 3x — most common
+  'CryptoTransfer',
   'ContractCall',
   'ContractCall',
   'TokenTransfer',
@@ -79,29 +74,21 @@ const STATE_CHANGE_TYPES: StateChangeType[] = [
 // ---------------------------------------------------------------------------
 
 /**
- * MockBlockStream — generates realistic mock Block Stream data locally.
+ * Generates realistic mock Block Stream data locally per HIP-1056.
  *
- * Simulates Hedera's HIP-1056 Block Streams by producing blocks at
- * configurable intervals, each containing transactions, state changes,
- * and block proofs. The stream implements a typed event emitter so
- * consumers can subscribe to `block`, `transaction`, `stateChange`, etc.
+ * Produces blocks at configurable intervals, each containing transactions,
+ * state changes, and block proofs. Extends {@link TypedEventEmitter} for
+ * type-safe event subscriptions.
  *
  * @example
  * ```typescript
- * import { MockBlockStream } from 'hiero-block-bridge';
- *
- * const stream = new MockBlockStream({
- *   blockIntervalMs: 2000,
- *   transactionsPerBlock: 5,
- * });
+ * const stream = new MockBlockStream({ blockIntervalMs: 2000 });
  *
  * stream.on('block', (block) => {
- *   console.log(`Block #${block.header.number} — ${block.items.length} items`);
+ *   console.log(`Block #${block.header.number}`);
  * });
  *
  * await stream.start();
- * // ... later
- * await stream.stop();
  * ```
  */
 export class MockBlockStream extends TypedEventEmitter<BlockStreamEvents> {
@@ -113,13 +100,11 @@ export class MockBlockStream extends TypedEventEmitter<BlockStreamEvents> {
   private running = false;
   private paused = false;
 
-  /** All blocks generated so far (in-memory store for QuerySimulator). */
   private readonly blocks: Block[] = [];
 
   constructor(options?: Partial<SimulatorOptions>, logger?: pino.Logger) {
     super();
 
-    // Validate and apply defaults via Zod schema
     const parsed = SimulatorOptionsSchema.parse(options ?? {});
     this.options = parsed as Required<SimulatorOptions>;
     this.currentBlockNumber = this.options.startBlockNumber;
@@ -131,7 +116,7 @@ export class MockBlockStream extends TypedEventEmitter<BlockStreamEvents> {
   // -----------------------------------------------------------------------
 
   /**
-   * Start generating mock blocks at the configured interval.
+   * Start producing mock blocks at the configured interval.
    *
    * @throws {HieroBridgeError} If the stream is already running.
    */
@@ -155,15 +140,12 @@ export class MockBlockStream extends TypedEventEmitter<BlockStreamEvents> {
       'MockBlockStream started',
     );
 
-    // Generate the first block immediately
     this.generateAndEmitBlock();
 
-    // Then generate at the configured interval
     this.intervalId = setInterval(() => {
       if (!this.paused) {
         this.generateAndEmitBlock();
       } else {
-        // Emit heartbeat while paused
         const heartbeatEvent: BlockStreamEvent = {
           type: 'STREAM_HEARTBEAT',
           timestamp: new Date().toISOString(),
@@ -175,9 +157,7 @@ export class MockBlockStream extends TypedEventEmitter<BlockStreamEvents> {
     }, this.options.blockIntervalMs);
   }
 
-  /**
-   * Stop the block stream and clean up resources.
-   */
+  /** Stop the block stream and release resources. */
   async stop(): Promise<void> {
     if (this.intervalId) {
       clearInterval(this.intervalId);
@@ -192,9 +172,7 @@ export class MockBlockStream extends TypedEventEmitter<BlockStreamEvents> {
     );
   }
 
-  /**
-   * Pause block generation. The stream stays alive and emits heartbeats.
-   */
+  /** Pause block generation. Heartbeats continue while paused. */
   pause(): void {
     if (!this.running || this.paused) return;
     this.paused = true;
@@ -202,9 +180,7 @@ export class MockBlockStream extends TypedEventEmitter<BlockStreamEvents> {
     this.logger.debug('MockBlockStream paused');
   }
 
-  /**
-   * Resume block generation after a pause.
-   */
+  /** Resume block generation after a pause. */
   resume(): void {
     if (!this.running || !this.paused) return;
     this.paused = false;
@@ -213,10 +189,8 @@ export class MockBlockStream extends TypedEventEmitter<BlockStreamEvents> {
   }
 
   /**
-   * Seek to a specific block number. The next generated block will
-   * continue from this number. Does not replay past blocks.
+   * Seek to a specific block number. Does not replay past blocks.
    *
-   * @param blockNumber - The block number to seek to.
    * @throws {HieroBridgeError} If blockNumber is negative.
    */
   async seek(blockNumber: number): Promise<void> {
@@ -234,27 +208,22 @@ export class MockBlockStream extends TypedEventEmitter<BlockStreamEvents> {
   // Accessors
   // -----------------------------------------------------------------------
 
-  /** Whether the stream is currently running. */
   isRunning(): boolean {
     return this.running;
   }
 
-  /** Whether the stream is paused. */
   isPaused(): boolean {
     return this.paused;
   }
 
-  /** Get the current (next-to-generate) block number. */
   getCurrentBlockNumber(): number {
     return this.currentBlockNumber;
   }
 
-  /** Get all generated blocks (for QuerySimulator). */
   getBlocks(): readonly Block[] {
     return this.blocks;
   }
 
-  /** Get a specific block by number, or undefined if not found. */
   getBlock(blockNumber: number): Block | undefined {
     return this.blocks.find((b) => b.header.number === blockNumber);
   }
@@ -263,10 +232,8 @@ export class MockBlockStream extends TypedEventEmitter<BlockStreamEvents> {
   // Block generation (private)
   // -----------------------------------------------------------------------
 
-  /** Generate a single block and emit all associated events. */
   private generateAndEmitBlock(): void {
     try {
-      // Simulate random failure injection
       if (this.options.failureRate > 0 && Math.random() < this.options.failureRate) {
         const errorEvent: BlockStreamEvent = {
           type: 'STREAM_ERROR',
@@ -282,23 +249,14 @@ export class MockBlockStream extends TypedEventEmitter<BlockStreamEvents> {
       const now = new Date();
       const blockNumber = this.currentBlockNumber;
 
-      // --- Generate transactions ---
       const transactions = this.generateTransactions(now);
+      const stateChanges = this.generateStateChanges(transactions);
 
-      // --- Generate state changes from transactions ---
-      const stateChanges = this.generateStateChanges(transactions, now);
-
-      // --- Assemble block items ---
       const items: BlockItem[] = [
-        ...transactions.map(
-          (tx): BlockItem => ({ kind: 'transaction', data: tx }),
-        ),
-        ...stateChanges.map(
-          (sc): BlockItem => ({ kind: 'stateChange', data: sc }),
-        ),
+        ...transactions.map((tx): BlockItem => ({ kind: 'transaction', data: tx })),
+        ...stateChanges.map((sc): BlockItem => ({ kind: 'stateChange', data: sc })),
       ];
 
-      // --- Block header ---
       const previousHash =
         this.blocks.length > 0
           ? this.blocks[this.blocks.length - 1].header.hash
@@ -306,7 +264,7 @@ export class MockBlockStream extends TypedEventEmitter<BlockStreamEvents> {
 
       const header: BlockHeader = {
         number: blockNumber,
-        hash: randomHex(48), // SHA-384 = 48 bytes
+        hash: randomHex(48),
         previousHash,
         timestamp: now.toISOString(),
         itemCount: items.length,
@@ -314,7 +272,6 @@ export class MockBlockStream extends TypedEventEmitter<BlockStreamEvents> {
         hashAlgorithm: 'SHA_384',
       };
 
-      // --- Block proof ---
       const proof: BlockProof = {
         blockNumber,
         blockHash: header.hash,
@@ -322,7 +279,6 @@ export class MockBlockStream extends TypedEventEmitter<BlockStreamEvents> {
         verified: true,
       };
 
-      // --- Assemble full block ---
       const successCount = transactions.filter(
         (tx) => tx.receipt.status === 'SUCCESS',
       ).length;
@@ -341,22 +297,14 @@ export class MockBlockStream extends TypedEventEmitter<BlockStreamEvents> {
         failedTransactions: transactions.length - successCount,
       };
 
-      // --- Store block ---
       this.blocks.push(block);
       this.currentBlockNumber++;
 
-      // --- Emit events ---
-
-      // 1. BLOCK_START
+      // Emit granular events before the complete block event
       this.emit('streamEvent', { type: 'BLOCK_START', header });
 
-      // 2. Each item
       for (const item of items) {
-        this.emit('streamEvent', {
-          type: 'BLOCK_ITEM',
-          item,
-          blockNumber,
-        });
+        this.emit('streamEvent', { type: 'BLOCK_ITEM', item, blockNumber });
 
         if (item.kind === 'transaction') {
           this.emit('transaction', item.data);
@@ -365,7 +313,6 @@ export class MockBlockStream extends TypedEventEmitter<BlockStreamEvents> {
         }
       }
 
-      // 3. BLOCK_END
       this.emit('streamEvent', {
         type: 'BLOCK_END',
         proof,
@@ -378,15 +325,10 @@ export class MockBlockStream extends TypedEventEmitter<BlockStreamEvents> {
         },
       });
 
-      // 4. Complete block
       this.emit('block', block);
 
       this.logger.debug(
-        {
-          blockNumber,
-          transactions: transactions.length,
-          stateChanges: stateChanges.length,
-        },
+        { blockNumber, transactions: transactions.length, stateChanges: stateChanges.length },
         'Block generated',
       );
     } catch (error) {
@@ -396,16 +338,15 @@ export class MockBlockStream extends TypedEventEmitter<BlockStreamEvents> {
     }
   }
 
-  /** Generate mock transactions for a block. */
   private generateTransactions(blockTime: Date): EventTransaction[] {
     const count = this.options.transactionsPerBlock;
     const transactions: EventTransaction[] = [];
 
     for (let i = 0; i < count; i++) {
       const payerAccountId = randomAccountId();
-      const txTime = new Date(blockTime.getTime() + i * 50); // stagger within block
+      const txTime = new Date(blockTime.getTime() + i * 50);
       const type = randomPick(COMMON_TX_TYPES);
-      const isSuccess = Math.random() > 0.05; // 95% success rate
+      const isSuccess = Math.random() > 0.05;
 
       const tx: EventTransaction = {
         transactionId: makeTransactionId(payerAccountId, txTime),
@@ -420,12 +361,12 @@ export class MockBlockStream extends TypedEventEmitter<BlockStreamEvents> {
             ? { serialNumbers: [randomInt(1, 10000)] }
             : {}),
         },
-        fee: randomInt(50_000, 5_000_000), // 0.0005 – 0.05 HBAR
+        fee: randomInt(50_000, 5_000_000),
         consensusTimestamp: txTime.toISOString(),
         validStartTimestamp: new Date(txTime.getTime() - 5000).toISOString(),
         validDurationSeconds: 120,
         nodeAccountId: `0.0.${randomPick([3, 4, 5, 6, 7])}`,
-        transfers: this.generateTransfers(payerAccountId, type),
+        transfers: this.generateTransfers(payerAccountId),
         tokenTransfers: type === 'TokenTransfer' ? this.generateTokenTransfers() : [],
         ...(type === 'ContractCall' || type === 'ContractCreate'
           ? {
@@ -448,10 +389,8 @@ export class MockBlockStream extends TypedEventEmitter<BlockStreamEvents> {
     return transactions;
   }
 
-  /** Generate HBAR transfer list for a transaction. */
   private generateTransfers(
     payerAccountId: string,
-    _type: TransactionType,
   ): { accountId: string; amount: number }[] {
     const fee = randomInt(50_000, 500_000);
     const recipientId = randomAccountId();
@@ -465,7 +404,6 @@ export class MockBlockStream extends TypedEventEmitter<BlockStreamEvents> {
     ];
   }
 
-  /** Generate token transfer entries. */
   private generateTokenTransfers(): {
     tokenId: string;
     accountId: string;
@@ -482,17 +420,12 @@ export class MockBlockStream extends TypedEventEmitter<BlockStreamEvents> {
     ];
   }
 
-  /** Generate state changes resulting from transactions. */
-  private generateStateChanges(
-    transactions: EventTransaction[],
-    _blockTime: Date,
-  ): StateChange[] {
+  private generateStateChanges(transactions: EventTransaction[]): StateChange[] {
     const changes: StateChange[] = [];
 
     for (const tx of transactions) {
       if (tx.receipt.status !== 'SUCCESS') continue;
 
-      // Each successful transaction produces at least one balance change
       const changeType = randomPick(STATE_CHANGE_TYPES);
       const previousValue = String(randomInt(0, 1_000_000_000));
       const delta = randomInt(-100_000_000, 100_000_000);

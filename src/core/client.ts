@@ -66,8 +66,7 @@ export class HieroClient {
         'Connecting to Hedera network',
       );
 
-      // NOTE: Actual SDK Client instantiation will be implemented in Phase 2.
-      // For now, we validate config and mark as connected.
+      // TODO: Instantiate SDK Client with operator credentials.
       this.connected = true;
 
       this.logger.info({ network: networkString }, 'Connected to Hedera network');

@@ -1,6 +1,4 @@
-// Types — Public type definitions for HieroBlockBridge
 export {
-  // Block types
   type BlockHeader,
   type EventTransaction,
   type TransactionType,
@@ -16,7 +14,6 @@ export {
   type BlockStreamEvent,
   type AccountBalance,
   type BlockStreamEvents,
-  // Zod schemas
   BlockHeaderSchema,
   EventTransactionSchema,
   TransactionTypeSchema,
@@ -34,7 +31,6 @@ export {
 } from './block.js';
 
 export {
-  // Config types
   type NetworkName,
   type NetworkConfig,
   type OperatorConfig,
@@ -42,7 +38,6 @@ export {
   type FallbackStrategy,
   type LoggingConfig,
   type BridgeConfig,
-  // Config schemas
   NetworkNameSchema,
   NetworkConfigSchema,
   OperatorConfigSchema,
