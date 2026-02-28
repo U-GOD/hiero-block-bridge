@@ -21,7 +21,7 @@ import { EventEmitter } from 'events';
  * ```
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export class TypedEventEmitter<T extends Record<string, (...args: any[]) => void>> {
+export class TypedEventEmitter<T extends { [K in keyof T]: (...args: any[]) => void }> {
   private readonly emitter = new EventEmitter();
 
   /** Register a listener for the given event. */
