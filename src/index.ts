@@ -78,3 +78,4 @@ export { MirrorNodeFallback, type MirrorNodeFallbackConfig, type FallbackEvents 
 
 // Automator
 export { DockerManager, type DockerManagerConfig, type ContainerStatus, type DockerManagerEvents } from './automator/index.js';
+export { SoloRunner, type SoloRunnerConfig, type SoloStatus, type SoloNetworkInfo, type SoloRunnerEvents } from './automator/index.js';
