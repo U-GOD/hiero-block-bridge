@@ -9,3 +9,11 @@ export {
   type NodeMetrics,
   type WaitForReadyOptions,
 } from './health.js';
+export {
+  checkHardware,
+  formatHardwareReport,
+  type HardwareReport,
+  type HardwareCheckItem,
+  type HardwareRequirements,
+  type CheckStatus,
+} from './hardware-check.js';

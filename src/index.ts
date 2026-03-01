@@ -88,3 +88,11 @@ export {
   type NodeMetrics,
   type WaitForReadyOptions,
 } from './automator/index.js';
+export {
+  checkHardware,
+  formatHardwareReport,
+  type HardwareReport,
+  type HardwareCheckItem,
+  type HardwareRequirements,
+  type CheckStatus,
+} from './automator/index.js';
