@@ -1,0 +1,48 @@
+# Template Docker Compose for a local Hedera Block Node environment.
+#
+# Usage:
+#   docker compose -f docker/docker-compose.block-node.yml up -d
+#
+# Or use the HieroBlockBridge DockerManager class to manage this programmatically:
+#   const docker = new DockerManager();
+#   await docker.up();
+#
+# See: https://github.com/hiero-ledger/hiero-block-node
+
+version: '3.8'
+
+services:
+  block-node:
+    image: ghcr.io/hiero-ledger/hiero-block-node:latest
+    container_name: hiero-block-node
+    ports:
+      - '8080:8080' # gRPC
+      - '8081:8081' # REST API
+    environment:
+      JAVA_OPTS: '-Xmx512m'
+      HIERO_BLOCK_NODE_STORAGE_ROOT: '/opt/hiero/data'
+    volumes:
+      - block-node-data:/opt/hiero/data
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:8081/health']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    restart: unless-stopped
+
+  mirror-node:
+    image: ghcr.io/hiero-ledger/hedera-mirror-node:latest
+    container_name: hiero-mirror-node
+    ports:
+      - '5551:5551' # REST API
+    environment:
+      HEDERA_MIRROR_IMPORTER_ENABLED: 'true'
+    depends_on:
+      block-node:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  block-node-data:
+    driver: local
