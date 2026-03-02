@@ -8,3 +8,10 @@ export {
   type DeprecationRule,
   type DeprecationSeverity,
 } from './deprecation-rules.js';
+
+export {
+  DeprecationDetector,
+  type DeprecationMatch,
+  type DeprecationReport,
+  type DetectorOptions,
+} from './detector.js';

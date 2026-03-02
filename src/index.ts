@@ -108,3 +108,9 @@ export {
   type DeprecationRule,
   type DeprecationSeverity,
 } from './migration/index.js';
+export {
+  DeprecationDetector,
+  type DeprecationMatch,
+  type DeprecationReport,
+  type DetectorOptions,
+} from './migration/index.js';
