@@ -114,3 +114,11 @@ export {
   type DeprecationReport,
   type DetectorOptions,
 } from './migration/index.js';
+export {
+  ThrottleMonitor,
+  type ThrottleLimit,
+  type ThrottleSnapshot,
+  type ThrottleStatus,
+  type ThrottleMonitorEvents,
+  type ThrottleMonitorConfig,
+} from './migration/index.js';

@@ -15,3 +15,12 @@ export {
   type DeprecationReport,
   type DetectorOptions,
 } from './detector.js';
+
+export {
+  ThrottleMonitor,
+  type ThrottleLimit,
+  type ThrottleSnapshot,
+  type ThrottleStatus,
+  type ThrottleMonitorEvents,
+  type ThrottleMonitorConfig,
+} from './throttle-monitor.js';
