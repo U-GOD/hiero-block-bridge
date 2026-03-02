@@ -26,6 +26,13 @@ export default [
         AbortSignal: 'readonly',
         EventTarget: 'readonly',
         Event: 'readonly',
+        fetch: 'readonly',
+        Response: 'readonly',
+        Request: 'readonly',
+        Headers: 'readonly',
+        crypto: 'readonly',
+        __dirname: 'readonly',
+        __filename: 'readonly',
       },
     },
     plugins: {
@@ -49,6 +56,13 @@ export default [
   },
   prettierConfig,
   {
-    ignores: ['dist/', 'node_modules/', 'coverage/', 'docs/', '*.config.*'],
+    ignores: [
+      'dist/',
+      'node_modules/',
+      'coverage/',
+      'docs/',
+      '*.config.*',
+      'tests/fixtures/deprecated-code-samples/',
+    ],
   },
 ];
