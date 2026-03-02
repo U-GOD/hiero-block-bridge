@@ -1,0 +1,188 @@
+[
+  {
+    "transactionId": "0.0.1001@1709000000.000000000",
+    "type": "CryptoTransfer",
+    "payerAccountId": "0.0.1001",
+    "receipt": { "status": "SUCCESS" },
+    "fee": 100000,
+    "consensusTimestamp": "2026-01-15T00:00:00.000Z",
+    "validStartTimestamp": "2026-01-15T00:00:00.000Z",
+    "validDurationSeconds": 120,
+    "nodeAccountId": "0.0.3",
+    "transfers": [
+      { "accountId": "0.0.1001", "amount": -500000000 },
+      { "accountId": "0.0.1002", "amount": 499900000 },
+      { "accountId": "0.0.98", "amount": 100000 }
+    ],
+    "tokenTransfers": []
+  },
+  {
+    "transactionId": "0.0.1002@1709000001.000000000",
+    "type": "TokenMint",
+    "payerAccountId": "0.0.1002",
+    "receipt": { "status": "SUCCESS", "newTotalSupply": 1000 },
+    "fee": 200000,
+    "consensusTimestamp": "2026-01-15T00:00:00.100Z",
+    "validStartTimestamp": "2026-01-15T00:00:00.100Z",
+    "validDurationSeconds": 120,
+    "nodeAccountId": "0.0.3",
+    "transfers": [
+      { "accountId": "0.0.1002", "amount": -200000 },
+      { "accountId": "0.0.98", "amount": 200000 }
+    ],
+    "tokenTransfers": [
+      { "tokenId": "0.0.5000", "accountId": "0.0.1002", "amount": 1000 }
+    ]
+  },
+  {
+    "transactionId": "0.0.1001@1709000002.000000000",
+    "type": "ContractCall",
+    "payerAccountId": "0.0.1001",
+    "receipt": { "status": "SUCCESS" },
+    "fee": 500000,
+    "consensusTimestamp": "2026-01-15T00:00:02.000Z",
+    "validStartTimestamp": "2026-01-15T00:00:02.000Z",
+    "validDurationSeconds": 120,
+    "nodeAccountId": "0.0.4",
+    "transfers": [
+      { "accountId": "0.0.1001", "amount": -500000 },
+      { "accountId": "0.0.98", "amount": 500000 }
+    ],
+    "tokenTransfers": [],
+    "contractResult": {
+      "contractId": "0.0.7000",
+      "result": "0x0000000000000000000000000000000000000000000000000000000000000001",
+      "gasUsed": 25000,
+      "gas": 80000,
+      "amount": 0,
+      "logs": []
+    }
+  },
+  {
+    "transactionId": "0.0.1003@1709000003.000000000",
+    "type": "ConsensusSubmitMessage",
+    "payerAccountId": "0.0.1003",
+    "receipt": { "status": "SUCCESS" },
+    "fee": 50000,
+    "consensusTimestamp": "2026-01-15T00:00:04.000Z",
+    "validStartTimestamp": "2026-01-15T00:00:04.000Z",
+    "validDurationSeconds": 120,
+    "nodeAccountId": "0.0.3",
+    "transfers": [
+      { "accountId": "0.0.1003", "amount": -50000 },
+      { "accountId": "0.0.98", "amount": 50000 }
+    ],
+    "tokenTransfers": []
+  },
+  {
+    "transactionId": "0.0.1001@1709000004.000000000",
+    "type": "CryptoTransfer",
+    "payerAccountId": "0.0.1001",
+    "receipt": { "status": "INSUFFICIENT_PAYER_BALANCE" },
+    "fee": 100000,
+    "consensusTimestamp": "2026-01-15T00:00:04.100Z",
+    "validStartTimestamp": "2026-01-15T00:00:04.100Z",
+    "validDurationSeconds": 120,
+    "nodeAccountId": "0.0.3",
+    "transfers": [],
+    "tokenTransfers": []
+  },
+  {
+    "transactionId": "0.0.1001@1709000005.000000000",
+    "type": "CryptoCreate",
+    "payerAccountId": "0.0.1001",
+    "receipt": { "status": "SUCCESS", "accountId": "0.0.2000" },
+    "fee": 1000000,
+    "consensusTimestamp": "2026-01-15T00:00:06.000Z",
+    "validStartTimestamp": "2026-01-15T00:00:06.000Z",
+    "validDurationSeconds": 120,
+    "nodeAccountId": "0.0.3",
+    "transfers": [
+      { "accountId": "0.0.1001", "amount": -11000000 },
+      { "accountId": "0.0.2000", "amount": 10000000 },
+      { "accountId": "0.0.98", "amount": 1000000 }
+    ],
+    "tokenTransfers": []
+  },
+  {
+    "transactionId": "0.0.1002@1709000006.000000000",
+    "type": "TokenCreate",
+    "payerAccountId": "0.0.1002",
+    "receipt": { "status": "SUCCESS", "tokenId": "0.0.5002" },
+    "fee": 5000000,
+    "consensusTimestamp": "2026-01-15T00:00:08.000Z",
+    "validStartTimestamp": "2026-01-15T00:00:08.000Z",
+    "validDurationSeconds": 120,
+    "nodeAccountId": "0.0.4",
+    "transfers": [
+      { "accountId": "0.0.1002", "amount": -5000000 },
+      { "accountId": "0.0.98", "amount": 5000000 }
+    ],
+    "tokenTransfers": []
+  },
+  {
+    "transactionId": "0.0.1003@1709000007.000000000",
+    "type": "FileCreate",
+    "payerAccountId": "0.0.1003",
+    "receipt": { "status": "SUCCESS", "fileId": "0.0.8000" },
+    "fee": 300000,
+    "consensusTimestamp": "2026-01-15T00:00:10.000Z",
+    "validStartTimestamp": "2026-01-15T00:00:10.000Z",
+    "validDurationSeconds": 120,
+    "nodeAccountId": "0.0.3",
+    "transfers": [
+      { "accountId": "0.0.1003", "amount": -300000 },
+      { "accountId": "0.0.98", "amount": 300000 }
+    ],
+    "tokenTransfers": []
+  },
+  {
+    "transactionId": "0.0.1001@1709000008.000000000",
+    "type": "ContractCreate",
+    "payerAccountId": "0.0.1001",
+    "receipt": { "status": "SUCCESS", "contractId": "0.0.7001" },
+    "fee": 8000000,
+    "consensusTimestamp": "2026-01-15T00:00:12.000Z",
+    "validStartTimestamp": "2026-01-15T00:00:12.000Z",
+    "validDurationSeconds": 120,
+    "nodeAccountId": "0.0.4",
+    "transfers": [
+      { "accountId": "0.0.1001", "amount": -8000000 },
+      { "accountId": "0.0.98", "amount": 8000000 }
+    ],
+    "tokenTransfers": [],
+    "contractResult": {
+      "contractId": "0.0.7001",
+      "result": "0x",
+      "gasUsed": 150000,
+      "gas": 300000,
+      "amount": 0,
+      "logs": []
+    }
+  },
+  {
+    "transactionId": "0.0.1002@1709000009.000000000",
+    "type": "ContractCall",
+    "payerAccountId": "0.0.1002",
+    "receipt": { "status": "CONTRACT_REVERT_EXECUTED" },
+    "fee": 400000,
+    "consensusTimestamp": "2026-01-15T00:00:14.000Z",
+    "validStartTimestamp": "2026-01-15T00:00:14.000Z",
+    "validDurationSeconds": 120,
+    "nodeAccountId": "0.0.4",
+    "transfers": [
+      { "accountId": "0.0.1002", "amount": -400000 },
+      { "accountId": "0.0.98", "amount": 400000 }
+    ],
+    "tokenTransfers": [],
+    "contractResult": {
+      "contractId": "0.0.7001",
+      "result": "0x08c379a0",
+      "gasUsed": 50000,
+      "gas": 100000,
+      "amount": 0,
+      "errorMessage": "Insufficient token balance",
+      "logs": []
+    }
+  }
+]

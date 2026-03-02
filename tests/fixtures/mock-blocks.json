@@ -1,0 +1,216 @@
+[
+  {
+    "header": {
+      "number": 0,
+      "hash": "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4",
+      "previousHash": "0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+      "timestamp": "2026-01-15T00:00:00.000Z",
+      "itemCount": 3,
+      "hashAlgorithm": "SHA_384",
+      "softwareVersion": "0.56.0"
+    },
+    "items": [
+      {
+        "kind": "transaction",
+        "data": {
+          "transactionId": "0.0.1001@1709000000.000000000",
+          "type": "CryptoTransfer",
+          "payerAccountId": "0.0.1001",
+          "receipt": { "status": "SUCCESS" },
+          "fee": 100000,
+          "consensusTimestamp": "2026-01-15T00:00:00.000Z",
+          "validStartTimestamp": "2026-01-15T00:00:00.000Z",
+          "validDurationSeconds": 120,
+          "nodeAccountId": "0.0.3",
+          "transfers": [
+            { "accountId": "0.0.1001", "amount": -500000000 },
+            { "accountId": "0.0.1002", "amount": 499900000 },
+            { "accountId": "0.0.98", "amount": 100000 }
+          ],
+          "tokenTransfers": []
+        }
+      },
+      {
+        "kind": "stateChange",
+        "data": {
+          "entityId": "0.0.1001",
+          "type": "ACCOUNT_UPDATE",
+          "property": "balance",
+          "oldValue": "10000000000",
+          "newValue": "9500000000",
+          "consensusTimestamp": "2026-01-15T00:00:00.000Z",
+          "transactionId": "0.0.1001@1709000000.000000000"
+        }
+      },
+      {
+        "kind": "transaction",
+        "data": {
+          "transactionId": "0.0.1002@1709000000.100000000",
+          "type": "TokenMint",
+          "payerAccountId": "0.0.1002",
+          "receipt": {
+            "status": "SUCCESS",
+            "newTotalSupply": 1000
+          },
+          "fee": 200000,
+          "consensusTimestamp": "2026-01-15T00:00:00.100Z",
+          "validStartTimestamp": "2026-01-15T00:00:00.100Z",
+          "validDurationSeconds": 120,
+          "nodeAccountId": "0.0.3",
+          "transfers": [
+            { "accountId": "0.0.1002", "amount": -200000 },
+            { "accountId": "0.0.98", "amount": 200000 }
+          ],
+          "tokenTransfers": [
+            { "tokenId": "0.0.5000", "accountId": "0.0.1002", "amount": 1000 }
+          ]
+        }
+      }
+    ],
+    "proof": {
+      "blockNumber": 0,
+      "blockHash": "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4",
+      "previousBlockHash": "0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+      "merkleRoot": "ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00",
+      "timestamp": "2026-01-15T00:00:00.200Z",
+      "hashAlgorithm": "SHA_384"
+    },
+    "gasUsed": 0,
+    "successfulTransactions": 2,
+    "failedTransactions": 0
+  },
+  {
+    "header": {
+      "number": 1,
+      "hash": "b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5",
+      "previousHash": "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4",
+      "timestamp": "2026-01-15T00:00:02.000Z",
+      "itemCount": 2,
+      "hashAlgorithm": "SHA_384",
+      "softwareVersion": "0.56.0"
+    },
+    "items": [
+      {
+        "kind": "transaction",
+        "data": {
+          "transactionId": "0.0.1001@1709000002.000000000",
+          "type": "ContractCall",
+          "payerAccountId": "0.0.1001",
+          "receipt": { "status": "SUCCESS" },
+          "fee": 500000,
+          "consensusTimestamp": "2026-01-15T00:00:02.000Z",
+          "validStartTimestamp": "2026-01-15T00:00:02.000Z",
+          "validDurationSeconds": 120,
+          "nodeAccountId": "0.0.4",
+          "transfers": [
+            { "accountId": "0.0.1001", "amount": -500000 },
+            { "accountId": "0.0.98", "amount": 500000 }
+          ],
+          "tokenTransfers": [],
+          "contractResult": {
+            "contractId": "0.0.7000",
+            "result": "0x0000000000000000000000000000000000000000000000000000000000000001",
+            "gasUsed": 25000,
+            "gas": 80000,
+            "amount": 0,
+            "logs": []
+          }
+        }
+      },
+      {
+        "kind": "stateChange",
+        "data": {
+          "entityId": "0.0.7000",
+          "type": "CONTRACT_UPDATE",
+          "property": "storage",
+          "oldValue": "0x00",
+          "newValue": "0x01",
+          "consensusTimestamp": "2026-01-15T00:00:02.000Z",
+          "transactionId": "0.0.1001@1709000002.000000000"
+        }
+      }
+    ],
+    "proof": {
+      "blockNumber": 1,
+      "blockHash": "b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5",
+      "previousBlockHash": "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4",
+      "merkleRoot": "ee11ee11ee11ee11ee11ee11ee11ee11ee11ee11ee11ee11ee11ee11ee11ee11ee11ee11ee11ee11ee11ee11ee11ee11",
+      "timestamp": "2026-01-15T00:00:02.200Z",
+      "hashAlgorithm": "SHA_384"
+    },
+    "gasUsed": 25000,
+    "successfulTransactions": 1,
+    "failedTransactions": 0
+  },
+  {
+    "header": {
+      "number": 2,
+      "hash": "c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6",
+      "previousHash": "b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5",
+      "timestamp": "2026-01-15T00:00:04.000Z",
+      "itemCount": 3,
+      "hashAlgorithm": "SHA_384",
+      "softwareVersion": "0.56.0"
+    },
+    "items": [
+      {
+        "kind": "transaction",
+        "data": {
+          "transactionId": "0.0.1003@1709000003.000000000",
+          "type": "ConsensusSubmitMessage",
+          "payerAccountId": "0.0.1003",
+          "receipt": { "status": "SUCCESS" },
+          "fee": 50000,
+          "consensusTimestamp": "2026-01-15T00:00:04.000Z",
+          "validStartTimestamp": "2026-01-15T00:00:04.000Z",
+          "validDurationSeconds": 120,
+          "nodeAccountId": "0.0.3",
+          "transfers": [
+            { "accountId": "0.0.1003", "amount": -50000 },
+            { "accountId": "0.0.98", "amount": 50000 }
+          ],
+          "tokenTransfers": []
+        }
+      },
+      {
+        "kind": "transaction",
+        "data": {
+          "transactionId": "0.0.1001@1709000004.000000000",
+          "type": "CryptoTransfer",
+          "payerAccountId": "0.0.1001",
+          "receipt": { "status": "INSUFFICIENT_PAYER_BALANCE" },
+          "fee": 100000,
+          "consensusTimestamp": "2026-01-15T00:00:04.100Z",
+          "validStartTimestamp": "2026-01-15T00:00:04.100Z",
+          "validDurationSeconds": 120,
+          "nodeAccountId": "0.0.3",
+          "transfers": [],
+          "tokenTransfers": []
+        }
+      },
+      {
+        "kind": "stateChange",
+        "data": {
+          "entityId": "0.0.6000",
+          "type": "TOPIC_UPDATE",
+          "property": "sequenceNumber",
+          "oldValue": "41",
+          "newValue": "42",
+          "consensusTimestamp": "2026-01-15T00:00:04.000Z",
+          "transactionId": "0.0.1003@1709000003.000000000"
+        }
+      }
+    ],
+    "proof": {
+      "blockNumber": 2,
+      "blockHash": "c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6",
+      "previousBlockHash": "b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5",
+      "merkleRoot": "dd22dd22dd22dd22dd22dd22dd22dd22dd22dd22dd22dd22dd22dd22dd22dd22dd22dd22dd22dd22dd22dd22dd22dd22",
+      "timestamp": "2026-01-15T00:00:04.200Z",
+      "hashAlgorithm": "SHA_384"
+    },
+    "gasUsed": 0,
+    "successfulTransactions": 1,
+    "failedTransactions": 1
+  }
+]
