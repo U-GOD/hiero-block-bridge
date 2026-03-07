@@ -1,13 +1,12 @@
 {
-  "$schema": "https://typedoc.org/schema.json",
   "entryPoints": ["src/index.ts"],
   "out": "docs",
-  "name": "HieroBlockBridge",
-  "readme": "README.md",
+  "name": "HieroBlockBridge API Reference",
   "excludePrivate": true,
+  "excludeProtected": true,
   "excludeInternal": true,
-  "includeVersion": true,
-  "categorizeByGroup": true,
-  "searchInComments": true,
-  "plugin": []
+  "readme": "README.md",
+  "githubPages": true,
+  "theme": "default",
+  "includeVersion": true
 }
