@@ -8,7 +8,6 @@ async function main() {
     blockIntervalMs: 2000,
     transactionsPerBlock: 3,
     startBlockNumber: 1000,
-    network: 'testnet'
   }, logger);
 
   // Listen for newly generated blocks
@@ -19,7 +18,7 @@ async function main() {
 
   // Listen for individual transactions within the block
   stream.on('transaction', (tx) => {
-    console.log(`   └─ TX: ${tx.transactionId} (${tx.type}) -> ${tx.result}`);
+    console.log(`   └─ TX: ${tx.transactionId} (${tx.type}) -> ${tx.receipt.status}`);
   });
 
   logger.info('Starting Mock Block Stream...');
