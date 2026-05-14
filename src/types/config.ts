@@ -41,8 +41,22 @@ export type OperatorConfig = z.infer<typeof OperatorConfigSchema>;
 // Simulator Options
 // ---------------------------------------------------------------------------
 
-/** Configuration for the MockBlockStream simulator. */
+/**
+ * Operating mode for BlockStream:
+ * - `mock`: Pure local simulation (no network required). Default.
+ * - `passthrough`: Attempt real Block Node gRPC connection first; fall back to mock on failure.
+ */
+export const StreamModeSchema = z.enum(['mock', 'passthrough']);
+export type StreamMode = z.infer<typeof StreamModeSchema>;
+
+/** Configuration for the BlockStream (formerly MockBlockStream). */
 export const SimulatorOptionsSchema = z.object({
+  /** Operating mode. Default: 'mock'. */
+  mode: StreamModeSchema.default('mock'),
+  /** Block Node gRPC endpoint to connect to in passthrough mode. Default: 'localhost:8080'. */
+  blockNodeEndpoint: z.string().default('localhost:8080'),
+  /** Timeout (ms) for initial gRPC connection attempt in passthrough mode. Default: 5000. */
+  connectionTimeoutMs: z.number().int().positive().default(5000),
   /** Interval between blocks in milliseconds. Default: 2000 (matching Hedera's ~2s blocks). */
   blockIntervalMs: z.number().int().positive().default(2000),
   /** Number of transactions to generate per block. Default: 5. */
