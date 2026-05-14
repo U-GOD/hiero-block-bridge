@@ -1,0 +1,140 @@
+syntax = "proto3";
+
+package com.hedera.hapi.block;
+
+option java_package = "com.hedera.hapi.block.protoc";
+option java_multiple_files = true;
+
+// ---------------------------------------------------------------------------
+// Hiero Block Node — Block Stream Service
+//
+// Minimal consumer-side definition based on the Hiero Block Node
+// architecture (HIP-1056 / HIP-1081). Only the subscribeBlockStream
+// RPC is defined here since HieroBlockBridge is a consumer, not a
+// publisher.
+// ---------------------------------------------------------------------------
+
+service BlockStreamService {
+  /**
+   * Subscribe to a continuous stream of blocks from a Block Node.
+   * The server pushes BlockResponse messages as new blocks are produced
+   * by the consensus network.
+   */
+  rpc subscribeBlockStream (SubscribeStreamRequest) returns (stream SubscribeStreamResponse);
+}
+
+// ---------------------------------------------------------------------------
+// Request / Response messages
+// ---------------------------------------------------------------------------
+
+/** Request to subscribe to the block stream. */
+message SubscribeStreamRequest {
+  /** Block number to start streaming from (0 = latest). */
+  uint64 start_block_number = 1;
+
+  /** If true, only receive block headers (no items/proof). */
+  bool headers_only = 2;
+
+  /** Optional filter for transaction types (empty = all). */
+  repeated string transaction_type_filter = 3;
+}
+
+/** A single response in the block stream. */
+message SubscribeStreamResponse {
+  oneof response {
+    BlockHeader block_header = 1;
+    BlockItem block_item = 2;
+    BlockProof block_proof = 3;
+    StreamStatus status = 10;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Block data messages
+// ---------------------------------------------------------------------------
+
+/** Block header metadata. */
+message BlockHeader {
+  uint64 block_number = 1;
+  bytes block_hash = 2;
+  bytes previous_block_hash = 3;
+  string consensus_timestamp = 4;
+  uint32 item_count = 5;
+  string software_version = 6;
+  string hash_algorithm = 7;
+}
+
+/** A single item within a block. */
+message BlockItem {
+  oneof item {
+    EventTransaction transaction = 1;
+    StateChange state_change = 2;
+  }
+}
+
+/** Transaction record within a block. */
+message EventTransaction {
+  string transaction_id = 1;
+  string transaction_type = 2;
+  string payer_account_id = 3;
+  TransactionReceipt receipt = 4;
+  uint64 fee = 5;
+  string consensus_timestamp = 6;
+  string valid_start_timestamp = 7;
+  uint32 valid_duration_seconds = 8;
+  string node_account_id = 9;
+  repeated Transfer transfers = 10;
+  repeated TokenTransfer token_transfers = 11;
+  bytes transaction_hash = 12;
+}
+
+message TransactionReceipt {
+  string status = 1;
+  string account_id = 2;
+  string contract_id = 3;
+  string topic_id = 4;
+  string token_id = 5;
+  repeated int64 serial_numbers = 6;
+}
+
+message Transfer {
+  string account_id = 1;
+  int64 amount = 2;
+}
+
+message TokenTransfer {
+  string token_id = 1;
+  string account_id = 2;
+  int64 amount = 3;
+}
+
+/** State mutation caused by a transaction. */
+message StateChange {
+  string entity_id = 1;
+  string change_type = 2;
+  string previous_value = 3;
+  string new_value = 4;
+  string transaction_id = 5;
+  string consensus_timestamp = 6;
+}
+
+/** Cryptographic proof of block integrity. */
+message BlockProof {
+  uint64 block_number = 1;
+  bytes block_hash = 2;
+  bytes signature = 3;
+  bool verified = 4;
+}
+
+/** Stream lifecycle status messages. */
+message StreamStatus {
+  enum StatusType {
+    CONNECTED = 0;
+    HEARTBEAT = 1;
+    RECONNECTING = 2;
+    DISCONNECTED = 3;
+  }
+  StatusType type = 1;
+  string message = 2;
+  uint64 latest_block_number = 3;
+}
