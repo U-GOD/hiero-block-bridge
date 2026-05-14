@@ -72,9 +72,10 @@ export {
 } from './core/index.js';
 
 // Simulator
-export { MockBlockStream } from './simulator/index.js';
+export { BlockStream, MockBlockStream, type BlockStreamSource } from './simulator/index.js';
 export { QuerySimulator } from './simulator/index.js';
 export { MirrorNodeFallback, type MirrorNodeFallbackConfig, type FallbackEvents } from './simulator/index.js';
+export { GrpcBlockClient, type GrpcClientConfig, type GrpcClientEvents } from './simulator/index.js';
 
 // Automator
 export { DockerManager, type DockerManagerConfig, type ContainerStatus, type DockerManagerEvents } from './automator/index.js';

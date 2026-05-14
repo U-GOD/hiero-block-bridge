@@ -11,7 +11,7 @@ import type {
   AccountBalance,
   StateChange,
 } from '../types/block.js';
-import type { MockBlockStream } from './mock-stream.js';
+import type { BlockStream } from './mock-stream.js';
 
 // ---------------------------------------------------------------------------
 // Input validation schemas
@@ -53,7 +53,7 @@ const BlockNumberSchema = z.number().int().nonnegative('Block number must be non
  * ```
  */
 export class QuerySimulator {
-  private readonly stream: MockBlockStream;
+  private readonly stream: BlockStream;
   private readonly logger: pino.Logger;
 
   /** Transaction ID → EventTransaction. */
@@ -67,7 +67,7 @@ export class QuerySimulator {
 
   private lastIndexedBlock = -1;
 
-  constructor(config: { stream: MockBlockStream; logger?: pino.Logger }) {
+  constructor(config: { stream: BlockStream; logger?: pino.Logger }) {
     this.stream = config.stream;
     this.logger = config.logger ?? createLogger({ level: 'info' });
     this.seedDefaultBalances();

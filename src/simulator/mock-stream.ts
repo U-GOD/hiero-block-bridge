@@ -2,6 +2,7 @@ import { TypedEventEmitter } from '../core/events.js';
 import { createLogger } from '../core/logger.js';
 import { SimulatorOptionsSchema } from '../types/config.js';
 import { HieroBridgeError, ErrorCode } from '../types/errors.js';
+import { GrpcBlockClient } from './grpc-client.js';
 import type pino from 'pino';
 import type { SimulatorOptions } from '../types/config.js';
 import type {
@@ -73,25 +74,40 @@ const STATE_CHANGE_TYPES: StateChangeType[] = [
 // MockBlockStream
 // ---------------------------------------------------------------------------
 
+/** Data source for the block stream. */
+export type BlockStreamSource = 'live' | 'mock';
+
 /**
- * Generates realistic mock Block Stream data locally per HIP-1056.
+ * Streams Hedera block data — from a real Block Node or local simulation.
  *
- * Produces blocks at configurable intervals, each containing transactions,
- * state changes, and block proofs. Extends {@link TypedEventEmitter} for
- * type-safe event subscriptions.
+ * In `mock` mode (default), generates realistic simulated blocks locally
+ * per HIP-1056 with zero network requirements.
+ *
+ * In `passthrough` mode, attempts to connect to a real Hiero Block Node
+ * via gRPC first. If the connection fails (node unreachable, gRPC packages
+ * not installed, timeout), it automatically falls back to mock simulation
+ * and emits a `'fallback'` event.
  *
  * @example
  * ```typescript
- * const stream = new MockBlockStream({ blockIntervalMs: 2000 });
+ * // Mock mode (default — same as before)
+ * const stream = new BlockStream({ blockIntervalMs: 2000 });
+ * stream.on('block', (block) => console.log(`Block #${block.header.number}`));
+ * await stream.start();
  *
- * stream.on('block', (block) => {
- *   console.log(`Block #${block.header.number}`);
+ * // Passthrough mode (try real node, fall back to mock)
+ * const stream = new BlockStream({
+ *   mode: 'passthrough',
+ *   blockNodeEndpoint: 'localhost:8080',
  * });
- *
+ * stream.on('fallback', (reason) => console.warn('Fell back to mock:', reason));
+ * stream.on('block', (block) => {
+ *   console.log(`[${stream.getSource()}] Block #${block.header.number}`);
+ * });
  * await stream.start();
  * ```
  */
-export class MockBlockStream extends TypedEventEmitter<BlockStreamEvents> {
+export class BlockStream extends TypedEventEmitter<BlockStreamEvents> {
   private readonly options: Required<SimulatorOptions>;
   private readonly logger: pino.Logger;
 
@@ -99,6 +115,8 @@ export class MockBlockStream extends TypedEventEmitter<BlockStreamEvents> {
   private currentBlockNumber: number;
   private running = false;
   private paused = false;
+  private source: BlockStreamSource = 'mock';
+  private grpcClient: GrpcBlockClient | null = null;
 
   private readonly blocks: Block[] = [];
 
@@ -116,7 +134,13 @@ export class MockBlockStream extends TypedEventEmitter<BlockStreamEvents> {
   // -----------------------------------------------------------------------
 
   /**
-   * Start producing mock blocks at the configured interval.
+   * Start the block stream.
+   *
+   * In `passthrough` mode, attempts a real Block Node gRPC connection first.
+   * If the connection fails, automatically falls back to mock simulation
+   * and emits a `'fallback'` event with the reason.
+   *
+   * In `mock` mode (default), starts local simulation immediately.
    *
    * @throws {HieroBridgeError} If the stream is already running.
    */
@@ -124,20 +148,47 @@ export class MockBlockStream extends TypedEventEmitter<BlockStreamEvents> {
     if (this.running) {
       throw new HieroBridgeError(
         ErrorCode.STREAM_ALREADY_RUNNING,
-        'MockBlockStream is already running. Call stop() before starting again.',
+        'BlockStream is already running. Call stop() before starting again.',
       );
     }
 
     this.running = true;
     this.paused = false;
 
+    // --- Passthrough mode: try real Block Node first ---
+    if (this.options.mode === 'passthrough') {
+      this.logger.info(
+        { endpoint: this.options.blockNodeEndpoint },
+        'Passthrough mode: attempting real Block Node connection...',
+      );
+
+      const connected = await this.tryConnectRealNode();
+
+      if (connected) {
+        this.source = 'live';
+        this.logger.info(
+          { endpoint: this.options.blockNodeEndpoint },
+          'Connected to real Block Node. Streaming live data.',
+        );
+        return; // gRPC stream is now feeding events via the client
+      }
+
+      // Connection failed — fall back to mock
+      this.source = 'mock';
+      this.logger.warn('Block Node unavailable. Falling back to mock simulation.');
+    }
+
+    // --- Mock simulation (default path) ---
+    this.source = 'mock';
+
     this.logger.info(
       {
+        mode: this.options.mode,
         blockIntervalMs: this.options.blockIntervalMs,
         transactionsPerBlock: this.options.transactionsPerBlock,
         startBlockNumber: this.currentBlockNumber,
       },
-      'MockBlockStream started',
+      'BlockStream started (mock simulation)',
     );
 
     this.generateAndEmitBlock();
@@ -157,18 +208,25 @@ export class MockBlockStream extends TypedEventEmitter<BlockStreamEvents> {
     }, this.options.blockIntervalMs);
   }
 
-  /** Stop the block stream and release resources. */
+  /** Stop the block stream and release all resources. */
   async stop(): Promise<void> {
+    // Disconnect gRPC client if connected
+    if (this.grpcClient) {
+      await this.grpcClient.disconnect();
+      this.grpcClient = null;
+    }
+
     if (this.intervalId) {
       clearInterval(this.intervalId);
       this.intervalId = null;
     }
     this.running = false;
     this.paused = false;
+    this.source = 'mock';
     this.emit('end');
     this.logger.info(
       { blocksGenerated: this.blocks.length },
-      'MockBlockStream stopped',
+      'BlockStream stopped',
     );
   }
 
@@ -201,7 +259,7 @@ export class MockBlockStream extends TypedEventEmitter<BlockStreamEvents> {
       );
     }
     this.currentBlockNumber = blockNumber;
-    this.logger.info({ blockNumber }, 'MockBlockStream seeked');
+    this.logger.info({ blockNumber }, 'BlockStream seeked');
   }
 
   // -----------------------------------------------------------------------
@@ -214,6 +272,15 @@ export class MockBlockStream extends TypedEventEmitter<BlockStreamEvents> {
 
   isPaused(): boolean {
     return this.paused;
+  }
+
+  /**
+   * Returns the current data source:
+   * - `'live'` — receiving real blocks from a Hiero Block Node via gRPC.
+   * - `'mock'` — generating simulated blocks locally.
+   */
+  getSource(): BlockStreamSource {
+    return this.source;
   }
 
   getCurrentBlockNumber(): number {
@@ -442,4 +509,117 @@ export class MockBlockStream extends TypedEventEmitter<BlockStreamEvents> {
 
     return changes;
   }
+
+  // -----------------------------------------------------------------------
+  // Passthrough: gRPC connection logic (private)
+  // -----------------------------------------------------------------------
+
+  /**
+   * Attempt to connect to a real Block Node via gRPC.
+   * If successful, pipes live blocks through our event system.
+   * If it fails, emits a 'fallback' event and returns false.
+   */
+  private async tryConnectRealNode(): Promise<boolean> {
+    this.grpcClient = new GrpcBlockClient({
+      endpoint: this.options.blockNodeEndpoint,
+      connectionTimeoutMs: this.options.connectionTimeoutMs,
+      startBlockNumber: this.currentBlockNumber,
+      logger: this.logger,
+    });
+
+    // Pipe live blocks through our event system
+    this.grpcClient.on('block', (block) => {
+      this.blocks.push(block);
+      this.currentBlockNumber = block.header.number + 1;
+
+      // Emit the same granular events as mock mode
+      this.emit('streamEvent', { type: 'BLOCK_START', header: block.header });
+
+      for (const item of block.items) {
+        this.emit('streamEvent', { type: 'BLOCK_ITEM', item, blockNumber: block.header.number });
+        if (item.kind === 'transaction') {
+          this.emit('transaction', item.data);
+        } else if (item.kind === 'stateChange') {
+          this.emit('stateChange', item.data);
+        }
+      }
+
+      if (block.proof) {
+        this.emit('streamEvent', {
+          type: 'BLOCK_END',
+          proof: block.proof,
+          blockNumber: block.header.number,
+          summary: {
+            itemCount: block.items.length,
+            gasUsed: block.gasUsed,
+            successCount: block.successfulTransactions,
+            failCount: block.failedTransactions,
+          },
+        });
+      }
+
+      this.emit('block', block);
+    });
+
+    // Handle disconnection during streaming — fall back to mock
+    this.grpcClient.on('disconnected', (reason) => {
+      this.logger.warn({ reason }, 'Live stream disconnected. Falling back to mock simulation.');
+      this.source = 'mock';
+      this.emit('fallback', `Live stream disconnected: ${reason}`);
+      this.startMockSimulation();
+    });
+
+    this.grpcClient.on('error', (err) => {
+      this.emit('error', err);
+    });
+
+    const connected = await this.grpcClient.connect();
+
+    if (!connected) {
+      const reason = `Could not connect to Block Node at ${this.options.blockNodeEndpoint}`;
+      this.emit('fallback', reason);
+      this.grpcClient = null;
+      return false;
+    }
+
+    return true;
+  }
+
+  /**
+   * Start mock simulation (extracted so it can be called from fallback).
+   */
+  private startMockSimulation(): void {
+    if (this.intervalId) return; // Already running mock
+
+    this.logger.info(
+      {
+        blockIntervalMs: this.options.blockIntervalMs,
+        transactionsPerBlock: this.options.transactionsPerBlock,
+        startBlockNumber: this.currentBlockNumber,
+      },
+      'BlockStream mock simulation started',
+    );
+
+    this.generateAndEmitBlock();
+
+    this.intervalId = setInterval(() => {
+      if (!this.paused) {
+        this.generateAndEmitBlock();
+      } else {
+        const heartbeatEvent: BlockStreamEvent = {
+          type: 'STREAM_HEARTBEAT',
+          timestamp: new Date().toISOString(),
+          latestBlockNumber: this.currentBlockNumber - 1,
+        };
+        this.emit('heartbeat', this.currentBlockNumber - 1);
+        this.emit('streamEvent', heartbeatEvent);
+      }
+    }, this.options.blockIntervalMs);
+  }
 }
+
+/**
+ * @deprecated Use {@link BlockStream} instead. `MockBlockStream` is preserved
+ * for backwards compatibility but will be removed in a future major version.
+ */
+export const MockBlockStream = BlockStream;

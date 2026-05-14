@@ -443,4 +443,7 @@ export interface BlockStreamEvents {
   resumed: () => void;
   /** Emitted when the stream ends (graceful shutdown). */
   end: () => void;
+  /** Emitted when passthrough mode falls back from live gRPC to mock simulation. */
+  fallback: (reason: string) => void;
 }
+
