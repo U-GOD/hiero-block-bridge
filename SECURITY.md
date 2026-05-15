@@ -15,9 +15,7 @@ We take the security of HieroBlockBridge and its users seriously. If you discove
 
 Please do **not** report security vulnerabilities via public GitHub issues.
 
-Instead, please report them by emailing: **security@hieroblock.dev**
-
-Alternatively, you may reach the maintainer directly at: **ugod.fvr@gmail.com**
+Instead, please report them by emailing: **kabufredrick9@gmail.com**
 
 You should receive a response within 48 hours. If for some reason you do not, please follow up via email to ensure we received your original message. 
 
