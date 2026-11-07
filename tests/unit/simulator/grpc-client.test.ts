@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
+import { EventEmitter } from 'events';
 import { GrpcBlockClient } from '../../../src/simulator/grpc-client.js';
 import { silentLogger } from '../../setup.js';
 
@@ -200,7 +201,7 @@ describe('GrpcBlockClient', () => {
     client.on('error', errHandler);
     client.on('disconnected', disconnectHandler);
 
-    client.grpcCall = new (require('events').EventEmitter)();
+    client.grpcCall = new EventEmitter();
     client.setupStreamHandlers();
 
     client.grpcCall.emit('error', new Error('stream reset'));
@@ -216,7 +217,7 @@ describe('GrpcBlockClient', () => {
     
     client.on('disconnected', disconnectHandler);
 
-    client.grpcCall = new (require('events').EventEmitter)();
+    client.grpcCall = new EventEmitter();
     client.setupStreamHandlers();
 
     client.grpcCall.emit('end');
